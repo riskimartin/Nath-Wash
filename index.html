@@ -47,7 +47,7 @@ table{width:100%;border-collapse:collapse;font-size:12.5px}th{color:var(--mut);f
 .tag{display:inline-block;background:var(--warnbg);color:var(--warn);font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
 .stok{font-size:22px;font-weight:700}
 .badge{font-size:11px;color:var(--mut);margin-top:6px}
-.top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.top{display:flex;align-items:center;justify-content:flex-start;gap:14px}
 .mbtn{flex:none;width:44px;height:44px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--tx);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
 .mbtn svg{width:22px;height:22px}
 .ic{width:24px;height:24px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
@@ -74,9 +74,9 @@ table{width:100%;border-collapse:collapse;font-size:12.5px}th{color:var(--mut);f
 </head>
 <body>
 <div class="wrap">
-<div class="top"><div><h1>NATH <span>WASH</span></h1>
-<div class="sub">Monitoring keuangan cuci motor &amp; mobil</div></div>
-<button class="mbtn" id="mbtn" data-a="menu" aria-label="Menu"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
+<div class="top"><button class="mbtn" id="mbtn" data-a="menu" aria-label="Menu"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+<div><h1>NATH <span>WASH</span></h1>
+<div class="sub">Monitoring keuangan cuci motor &amp; mobil</div></div></div>
 <div id="app" style="margin-top:14px"></div>
 <div class="badge" id="mode"></div>
 </div>
