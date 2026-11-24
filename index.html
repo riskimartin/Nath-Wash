@@ -300,12 +300,11 @@ function payBox(){
 function showQris(){var h=finalH(),o=$('#qov');o.innerHTML='<div style="color:#fff;font-size:22px;font-weight:700;text-align:center">Total bayar: '+R(h)+'</div><img src="qris.png" alt="QRIS Nath Wash"><div style="color:#CFE0FA;font-size:13px;text-align:center">Pelanggan mengisi nominal sendiri, pastikan sesuai total.</div><button class="btn" data-a="qtutup">Tutup</button>';o.style.display='flex'}
 function viewCuci(){
   var f=ui.form,T=S.cfg.tarif;
-  var h=strukBox()+'<h2>Catat cuci baru</h2><div class="card"><label>Jenis</label><div class="wchips">'+T.map(function(t){return '<button class="chip'+(f.jenis===t.id?' on':'')+'" data-a="jn" data-v="'+t.id+'">'+esc(t.nama)+'</button>'}).join('')+'</div><div class="ctot"><span>Total</span><b id="ctot">'+R(finalH())+'</b></div><label>Plat nomor (opsional)</label><input data-f="plat" placeholder="Contoh: KT 1234 AB" value="'+esc(f.plat||'')+'">'
+  var h=strukBox()+'<h2>Catat cuci baru</h2><div class="card"><label>Jenis</label><div class="wchips">'+T.map(function(t){return '<button class="chip'+(f.jenis===t.id?' on':'')+'" data-a="jn" data-v="'+t.id+'">'+esc(t.nama)+'</button>'}).join('')+'</div><div class="ctot"><span>Total</span><b id="ctot">'+R(finalH())+'</b></div>'+(S.cfg.kar.length?'<label>Dicuci oleh</label><div class="wchips">'+S.cfg.kar.map(function(k){return '<button class="chip'+(f.kid===k.id?' on':'')+'" data-a="kid" data-v="'+k.id+'">'+esc(k.nama)+'</button>'}).join('')+'</div>':'')
    +payBox()
-   +dt('op','Opsi lain','<label>Tanggal</label><input type="date" data-f="tgl" value="'+f.tgl+'"><label>Harga (bisa diubah)</label><input type="text" class="rp" inputmode="numeric" data-f="harga" value="'+f.harga+'">'+dt('dk','Tambah diskon',''+'<label>Diskon (opsional)</label><div class="row"><select data-f="dtype"><option value="none"'+(f.dtype==='none'?' selected':'')+'>Tanpa diskon</option><option value="pct"'+(f.dtype==='pct'?' selected':'')+'>Persen (%)</option><option value="rp"'+(f.dtype==='rp'?' selected':'')+'>Rupiah (Rp)</option></select><input type="'+(f.dtype==='rp'?'text" class="rp':'number')+'" inputmode="'+(f.dtype==='rp'?'numeric':'decimal')+'" data-f="dval" placeholder="Nilai" value="'+esc(f.dval)+'"></div><div class="sub" id="dhint">'+dHint()+'</div>',f.dtype!=='none')+'<label>Dicuci oleh</label><select data-f="kid"><option value="">– tidak dipilih –</option>'+S.cfg.kar.map(function(k){return '<option value="'+k.id+'"'+(f.kid===k.id?' selected':'')+'>'+esc(k.nama)+'</option>'}).join('')+'</select>',f.dtype!=='none')
+   +dt('op','Opsi lain','<label>Tanggal</label><input type="date" data-f="tgl" value="'+f.tgl+'"><label>Harga (bisa diubah)</label><input type="text" class="rp" inputmode="numeric" data-f="harga" value="'+f.harga+'">'+dt('dk','Tambah diskon',''+'<label>Diskon (opsional)</label><div class="row"><select data-f="dtype"><option value="none"'+(f.dtype==='none'?' selected':'')+'>Tanpa diskon</option><option value="pct"'+(f.dtype==='pct'?' selected':'')+'>Persen (%)</option><option value="rp"'+(f.dtype==='rp'?' selected':'')+'>Rupiah (Rp)</option></select><input type="'+(f.dtype==='rp'?'text" class="rp':'number')+'" inputmode="'+(f.dtype==='rp'?'numeric':'decimal')+'" data-f="dval" placeholder="Nilai" value="'+esc(f.dval)+'"></div><div class="sub" id="dhint">'+dHint()+'</div>',f.dtype!=='none'),f.dtype!=='none')
    +'<button class="btn full" data-a="catat">Catat</button></div>';
   var L=S.tx.slice().sort(function(a,b){return b.ts-a.ts}).slice(0,25);
-  h+=dt('sp','Cari kendaraan (plat)','<input data-f="sp" placeholder="Ketik plat, contoh: KT 1234" value="'+esc(ui.sp)+'"><div id="sphasil" style="margin-top:8px">'+spHtml()+'</div>',!!ui.sp);
   h+='<h2>Cucian terakhir</h2><div class="card">'+(L.length?L.map(txRow).join(''):'<div class="empty">Belum ada data.</div>')+'</div>';
   return h;
 }
@@ -510,6 +509,7 @@ function onClick(e){
     var nm=$('#sn').value.trim();if(!nm){toast('Isi nama item');return}
     S.cfg.sabun.push({id:uid(),nama:nm,stok:Number($('#ss').value)||0,satuan:$('#su').value.trim()||'pcs',min:Number($('#sm').value)||0});saveCfg();toast('Item ditambahkan')
   }
+  else if(a==='kid'){ui.form.kid=ui.form.kid===v?'':v;render()}
   else if(a==='jn'){var tt=S.cfg.tarif.filter(function(x){return x.id===v})[0];ui.form.jenis=v;ui.form.harga=tt?tt.harga:0;render()}
   else if(a==='pay'){ui.form.pay=v;if(v!=='tunai')ui.form.bayar='';render()}
   else if(a==='uang'){ui.form.bayar=v;render()}
