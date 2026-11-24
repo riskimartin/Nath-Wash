@@ -105,6 +105,19 @@ body{padding-bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 #bnav .add{width:54px;height:54px;border-radius:50%;background:var(--bl);color:#fff;justify-content:center;margin-top:-24px;border:4px solid var(--card);min-width:0}
 #bnav .ic{width:22px;height:22px}#bnav .add .ic{width:24px;height:24px}
 @media (min-width:1100px){#bnav{display:none}body{padding-bottom:32px}#toast{bottom:calc(32px + env(safe-area-inset-bottom,0px))}}
+h2{font-size:14px;color:var(--mut);font-weight:600;margin:26px 0 10px}
+input,select,textarea{border:0;background:var(--bl2);border-radius:14px;padding:13px 14px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--bl)}
+.btn{border-radius:14px}.btn.full{padding:14px;font-size:15px}
+.opt{background:var(--card);border-radius:18px;padding:0 16px;margin-bottom:10px}
+.opt>summary{list-style:none;cursor:pointer;padding:14px 0;font-size:14px;font-weight:600;color:var(--bl);display:flex;justify-content:space-between;align-items:center}
+.opt>summary::-webkit-details-marker{display:none}
+.opt>summary::after{content:"+";font-size:20px;line-height:1}
+.opt[open]>summary::after{content:"\2013"}
+.opt[open]{padding-bottom:16px}
+.card .opt{background:var(--bg);margin:10px 0 0}
+.top .sub{display:none}
+#mode{font-size:11px;opacity:.8}
 </style>
 </head>
 <body>
@@ -126,10 +139,12 @@ var TABS=[['ring','Ringkasan'],['cuci','Cuci'],['qris','QRIS'],['sabun','Sabun']
 var ICO={tema:'<circle cx="12" cy="12" r="8"/><path d="M12 4v16"/>',kas:'<rect x="3.5" y="6" width="17" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6.5 9.5v.01M17.5 14.5v.01"/>',ring:'<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>',cuci:'<path d="M12 3.5c3.5 4.2 5.5 7 5.5 10a5.5 5.5 0 0 1-11 0c0-3 2-5.8 5.5-10z"/>',qris:'<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><path d="M14 14h2.5v2.5M20 14v.01M14 20h2.5M20 17v3h-2"/>',sabun:'<path d="M10 3h4v3h-4zM9 6h6l1.5 3v10.5a1.5 1.5 0 0 1-1.5 1.5H9a1.5 1.5 0 0 1-1.5-1.5V9z"/><path d="M10 13h4v4h-4z"/>',kar:'<circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M15.5 4.8a3.5 3.5 0 0 1 0 6.4M18 14.5c1.8.9 3 2.8 3 5.5"/>',ex:'<path d="M6 3h12v18l-2.4-1.6L13.2 21 10.8 19.4 8.4 21 6 19.4zM9 8h6M9 12h6M9 16h3"/>',atur:'<path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3a1.5 1.5 0 0 1 0 2.1l-6.4 6.4a1.5 1.5 0 0 1-2.1 0z"/><circle cx="8" cy="8" r="1.3"/>',out:'<path d="M9 3.5H5.5a1.5 1.5 0 0 0-1.5 1.5v14a1.5 1.5 0 0 0 1.5 1.5H9M16 8l4 4-4 4M20 12H9"/>'};
 function ico(k){return '<svg class="ic" viewBox="0 0 24 24">'+ICO[k]+'</svg>'}
 ICO.plus='<path d="M12 5v14M5 12h14"/>';ICO.menu='<path d="M4 7h16M4 12h16M4 17h16"/>';
+function dt(k,t,b,f){return '<details class="opt" data-o="'+k+'"'+((ui.od[k]||f)?' open':'')+'><summary>'+t+'</summary>'+b+'</details>'}
+document.addEventListener('toggle',function(e){var d=e.target;if(d&&d.dataset&&d.dataset.o)ui.od[d.dataset.o]=d.open},true);
 function menu(o){$('#drawer').classList.toggle('on',o);$('#scrim').classList.toggle('on',o)}
 var DEF={tarif:[{id:'mk',nama:'Motor Kecil',harga:15000,tp:'motor'},{id:'mb',nama:'Motor Besar',harga:20000,tp:'motor'},{id:'mobk',nama:'Mobil Kecil',harga:50000,tp:'mobil'},{id:'mobs',nama:'Mobil Sedang',harga:60000,tp:'mobil'},{id:'mobb',nama:'Mobil Besar',harga:70000,tp:'mobil'},{id:'ambal',nama:'Ambal',harga:0,tp:'lain'}],kar:[],sabun:[]};
 var S={cfg:JSON.parse(JSON.stringify(DEF)),tx:[],ex:[]};
-var ui={tab:'ring',det:false,per:'month',del:null,qty:{},cr:7,kb:{},sp:'',tk:{tgl:ymd(new Date()),fisik:'',modal:''},form:{dtype:'none',dval:'',jenis:'mk',harga:15000,kid:'',plat:'',pay:'tunai',bayar:'',tgl:ymd(new Date())},dirty:false,auth:CLOUD?'wait':'ready',err:'',struk:null,sn:'',wr:'day',ef:{tgl:ymd(new Date()),ket:'',jml:''}};
+var ui={tab:'ring',det:false,od:{},per:'month',del:null,qty:{},cr:7,kb:{},sp:'',tk:{tgl:ymd(new Date()),fisik:'',modal:''},form:{dtype:'none',dval:'',jenis:'mk',harga:15000,kid:'',plat:'',pay:'tunai',bayar:'',tgl:ymd(new Date())},dirty:false,auth:CLOUD?'wait':'ready',err:'',struk:null,sn:'',wr:'day',ef:{tgl:ymd(new Date()),ket:'',jml:''}};
 var col=null,mode='lokal';
 function rv(el){return el.classList&&el.classList.contains('rp')?el.value.replace(/\D/g,''):el.value}
 function fmtRp(v){return String(v==null?'':v).replace(/\D/g,'').replace(/^0+(?=\d)/,'').replace(/\B(?=(\d{3})+(?!\d))/g,'.')}
@@ -211,7 +226,7 @@ function viewKas(){
    +'<label>Uang tunai di laci sekarang</label><input type="text" class="rp" inputmode="numeric" data-f="tkf" value="'+esc(ui.tk.fisik)+'">'
    +'<button class="btn full" data-a="kassave">Simpan tutup kas</button>'+(sv?'<div class="sub" style="margin-top:8px">Sudah ditutup: di laci '+R(sv.fisik)+', selisih '+R(sv.sel)+'</div>':'')+'</div>';
   var ks=Object.keys(K).sort().reverse().slice(0,10);
-  h+='<h2>Riwayat tutup kas</h2><div class="card">'+(ks.length?ks.map(function(d){var x=K[d];return '<div class="item"><div>'+d+'<small>seharusnya '+R(x.exp)+' · di laci '+R(x.fisik)+'</small></div><span class="r" style="color:'+(x.sel===0?'var(--ok)':'var(--warn)')+'">'+(x.sel===0?'Pas':(x.sel>0?'+':'−')+R(Math.abs(x.sel)))+'</span></div>'}).join(''):'<div class="empty">Belum ada.</div>')+'</div>';
+  h+=dt('rk','Riwayat tutup kas',(ks.length?ks.map(function(d){var x=K[d];return '<div class="item"><div>'+d+'<small>seharusnya '+R(x.exp)+' · di laci '+R(x.fisik)+'</small></div><span class="r" style="color:'+(x.sel===0?'var(--ok)':'var(--warn)')+'">'+(x.sel===0?'Pas':(x.sel>0?'+':'−')+R(Math.abs(x.sel)))+'</span></div>'}).join(''):'<div class="empty">Belum ada.</div>'));
   return h}
 function promo(){return S.cfg.promo||{on:false,n:10}}
 function theme(){try{return localStorage.getItem('nw_th')||'auto'}catch(e){return 'auto'}}
@@ -278,14 +293,14 @@ function viewCuci(){
   var f=ui.form,T=S.cfg.tarif;
   var h=strukBox()+'<h2>Catat cuci baru</h2><div class="card"><label>Tanggal</label><input type="date" data-f="tgl" value="'+f.tgl+'">'
    +'<label>Jenis</label><select data-f="jenis">'+T.map(function(t){return '<option value="'+t.id+'"'+(f.jenis===t.id?' selected':'')+'>'+esc(t.nama)+' ('+R(t.harga)+')</option>'}).join('')+'</select>'
-   +'<label>Harga (bisa diubah sesuai tingkat kekotoran)</label><input type="text" class="rp" inputmode="numeric" data-f="harga" value="'+f.harga+'">'
-   +'<label>Diskon (opsional)</label><div class="row"><select data-f="dtype"><option value="none"'+(f.dtype==='none'?' selected':'')+'>Tanpa diskon</option><option value="pct"'+(f.dtype==='pct'?' selected':'')+'>Persen (%)</option><option value="rp"'+(f.dtype==='rp'?' selected':'')+'>Rupiah (Rp)</option></select><input type="'+(f.dtype==='rp'?'text" class="rp':'number')+'" inputmode="'+(f.dtype==='rp'?'numeric':'decimal')+'" data-f="dval" placeholder="Nilai" value="'+esc(f.dval)+'"></div><div class="sub" id="dhint">'+dHint()+'</div>'
+   +'<label>Harga (bisa diubah)</label><input type="text" class="rp" inputmode="numeric" data-f="harga" value="'+f.harga+'">'
+   +dt('dk','Tambah diskon',''+'<label>Diskon (opsional)</label><div class="row"><select data-f="dtype"><option value="none"'+(f.dtype==='none'?' selected':'')+'>Tanpa diskon</option><option value="pct"'+(f.dtype==='pct'?' selected':'')+'>Persen (%)</option><option value="rp"'+(f.dtype==='rp'?' selected':'')+'>Rupiah (Rp)</option></select><input type="'+(f.dtype==='rp'?'text" class="rp':'number')+'" inputmode="'+(f.dtype==='rp'?'numeric':'decimal')+'" data-f="dval" placeholder="Nilai" value="'+esc(f.dval)+'"></div><div class="sub" id="dhint">'+dHint()+'</div>',f.dtype!=='none')
    +payBox()
-   +'<label>Plat nomor / keterangan kendaraan (opsional, untuk struk)</label><input data-f="plat" placeholder="Contoh: KT 1234 AB" value="'+esc(f.plat||'')+'">'
+   +'<label>Plat nomor (opsional)</label><input data-f="plat" placeholder="Contoh: KT 1234 AB" value="'+esc(f.plat||'')+'">'
    +'<label>Dicuci oleh</label><select data-f="kid"><option value="">– tidak dipilih –</option>'+S.cfg.kar.map(function(k){return '<option value="'+k.id+'"'+(f.kid===k.id?' selected':'')+'>'+esc(k.nama)+'</option>'}).join('')+'</select>'
    +'<button class="btn full" data-a="catat">Catat</button></div>';
   var L=S.tx.slice().sort(function(a,b){return b.ts-a.ts}).slice(0,25);
-  h+='<h2>Cari kendaraan (plat)</h2><div class="card"><input data-f="sp" placeholder="Ketik plat, contoh: KT 1234" value="'+esc(ui.sp)+'"><div id="sphasil" style="margin-top:8px">'+spHtml()+'</div></div>';
+  h+=dt('sp','Cari kendaraan (plat)','<input data-f="sp" placeholder="Ketik plat, contoh: KT 1234" value="'+esc(ui.sp)+'"><div id="sphasil" style="margin-top:8px">'+spHtml()+'</div>',!!ui.sp);
   h+='<h2>Cucian terakhir</h2><div class="card">'+(L.length?L.map(txRow).join(''):'<div class="empty">Belum ada data.</div>')+'</div>';
   return h;
 }
@@ -293,7 +308,7 @@ function viewSabun(){
   var h='<h2>Stok sabun &amp; perlengkapan</h2>';
   h+=S.cfg.sabun.length?S.cfg.sabun.map(function(s){var q=ui.qty[s.id]||'';return '<div class="card"><div class="item" style="border:0;padding:0 0 8px"><div>'+esc(s.nama)+'<small>minimal '+s.min+' '+esc(s.satuan)+'</small></div><div class="r"><span class="stok">'+s.stok+'</span> '+esc(s.satuan)+(s.stok<=s.min?'<br><span class="tag">menipis</span>':'')+'</div></div>'
    +'<div class="row"><input type="number" inputmode="decimal" placeholder="Jumlah" data-f="qty:'+s.id+'" value="'+q+'"><button class="btn sec sm" data-a="pakai" data-v="'+s.id+'">Dipakai</button><button class="btn sm" data-a="masuk" data-v="'+s.id+'">Masuk</button>'+(ROLE==='owner'?'<button class="btn del sm" data-a="delsabun" data-v="'+s.id+'">'+(ui.del===s.id?'Yakin?':'Hapus')+'</button>':'')+'</div></div>'}).join(''):'<div class="card empty">Belum ada item. Tambahkan di bawah.</div>';
-  h+='<h2>Tambah item</h2><div class="card"><label>Nama</label><input id="sn" placeholder="Contoh: Sabun shampoo motor"><div class="row"><div><label>Stok awal</label><input id="ss" type="number" inputmode="decimal"></div><div><label>Satuan</label><input id="su" value="liter"></div><div><label>Minimal</label><input id="sm" type="number" inputmode="decimal" value="1"></div></div><button class="btn full" data-a="addsabun">Tambah</button></div>';
+  h+=dt('sb','Tambah item','<label>Nama</label><input id="sn" placeholder="Contoh: Sabun shampoo motor"><div class="row"><div><label>Stok awal</label><input id="ss" type="number" inputmode="decimal"></div><div><label>Satuan</label><input id="su" value="liter"></div><div><label>Minimal</label><input id="sm" type="number" inputmode="decimal" value="1"></div></div><button class="btn full" data-a="addsabun">Tambah</button>',!S.cfg.sabun.length);
   return h;
 }
 function kbBox(k){var q=ui.kb[k.id]||{},L=(k.kasbon||[]).filter(inP).sort(function(a,b){return a.tgl<b.tgl?1:-1});
@@ -302,13 +317,15 @@ function kbBox(k){var q=ui.kb[k.id]||{},L=(k.kasbon||[]).filter(inP).sort(functi
 function viewKar(){
   var P=S.tx.filter(inP);
   var h='<div class="chips">'+[['day','Hari ini'],['month','Bulan ini'],['all','Semua']].map(function(c){return '<button class="chip'+(ui.per===c[0]?' on':'')+'" data-a="per" data-v="'+c[0]+'">'+c[1]+'</button>'}).join('')+'</div><h2>Karyawan &amp; pendapatan</h2>';
-  h+=S.cfg.kar.length?S.cfg.kar.map(function(k){var n=0,s=0,u=0;P.forEach(function(t){if(t.kid===k.id){n++;s+=t.harga;u+=t.promo?t.hb:t.harga}});return '<div class="card"><div class="item" style="border:0;padding:0 0 6px"><div>'+esc(k.nama)+'<small>'+n+' cucian · omzet '+R(s)+'</small></div><div class="r">'+R(u*(k.persen||0)/100)+'<small>upah '+(k.persen||0)+'%</small></div></div>'+(kbSum(k)>0?'<div class="item" style="border:0;padding:0 0 6px"><span>Kasbon dipotong</span><span class="r" style="color:var(--warn)">− '+R(kbSum(k))+'</span></div><div class="item" style="border:0;padding:0 0 6px"><span><b>Diterima bersih</b></span><span class="r">'+R(u*(k.persen||0)/100-kbSum(k))+'</span></div>':'')+'<label>Bagi hasil upah (%)</label><div class="row"><input type="number" inputmode="decimal" data-f="persen:'+k.id+'" value="'+(k.persen||0)+'"><button class="btn del sm" data-a="delkar" data-v="'+k.id+'">'+(ui.del===k.id?'Yakin?':'Hapus')+'</button></div>'+kbBox(k)+karLap(k,n,s,u)+'</div>'}).join(''):'<div class="card empty">Belum ada karyawan. Tambahkan di bawah.</div>';
-  h+='<h2>Tambah karyawan</h2><div class="card"><label>Nama</label><input id="kn" placeholder="Nama karyawan"><label>Bagi hasil upah (%) dari harga cucian</label><input id="kp" type="number" inputmode="decimal" value="40"><button class="btn full" data-a="addkar">Tambah</button></div>';
+  h+=S.cfg.kar.length?S.cfg.kar.map(function(k){var n=0,s=0,u=0;P.forEach(function(t){if(t.kid===k.id){n++;s+=t.harga;u+=t.promo?t.hb:t.harga}});return '<div class="card"><div class="item" style="border:0;padding:0 0 6px"><div>'+esc(k.nama)+'<small>'+n+' cucian · omzet '+R(s)+'</small></div><div class="r">'+R(u*(k.persen||0)/100)+'<small>upah '+(k.persen||0)+'%</small></div></div>'+(kbSum(k)>0?'<div class="item" style="border:0;padding:0 0 6px"><span>Kasbon dipotong</span><span class="r" style="color:var(--warn)">− '+R(kbSum(k))+'</span></div><div class="item" style="border:0;padding:0 0 6px"><span><b>Diterima bersih</b></span><span class="r">'+R(u*(k.persen||0)/100-kbSum(k))+'</span></div>':'')+dt('k'+k.id,'Atur, kasbon &amp; laporan',''+'<label>Bagi hasil upah (%)</label><div class="row"><input type="number" inputmode="decimal" data-f="persen:'+k.id+'" value="'+(k.persen||0)+'"><button class="btn del sm" data-a="delkar" data-v="'+k.id+'">'+(ui.del===k.id?'Yakin?':'Hapus')+'</button></div>'+kbBox(k)+karLap(k,n,s,u))+'</div>'}).join(''):'<div class="card empty">Belum ada karyawan. Tambahkan di bawah.</div>';
+  h+=dt('tk','Tambah karyawan','<label>Nama</label><input id="kn" placeholder="Nama karyawan"><label>Bagi hasil upah (%) dari harga cucian</label><input id="kp" type="number" inputmode="decimal" value="40"><button class="btn full" data-a="addkar">Tambah</button>',!S.cfg.kar.length);
   return h;
 }
 function viewAtur(){
-  return '<h2>Nama kasir</h2><div class="card"><label>Tercetak di struk</label><input data-f="kasir" placeholder="Nama kasir" value="'+esc(S.cfg.kasir||'')+'"></div><h2>Harga cuci</h2><div class="card">'+S.cfg.tarif.map(function(t){return '<div class="item"><span>'+esc(t.nama)+'</span><input style="width:140px" type="text" class="rp" inputmode="numeric" data-f="tarif:'+t.id+'" value="'+t.harga+'"></div>'}).join('')+'<div class="sub" style="margin-top:8px">Harga ini otomatis terisi saat mencatat cuci, dan tetap bisa diubah per cucian.</div></div>'
-   +'<h2>Promo cuci gratis</h2><div class="card"><div class="item" style="border:0;padding:0"><span>Aktifkan promo</span><button class="tgb'+(promo().on?' on':'')+'" data-a="promoon" aria-label="Aktifkan promo"></button></div><label>Gratis 1 kali setelah berapa kali cuci berbayar</label><input type="number" inputmode="numeric" data-f="promon" value="'+promo().n+'"><div class="sub" style="margin-top:6px">Kalau mati, tombol dan tulisan promo tidak muncul.</div></div><h2>Cadangan data</h2><div class="card"><div class="sub" style="margin:0 0 10px">'+bkInfo()+'</div><button class="btn full" style="margin-top:0" data-a="backup">Kirim cadangan ke WhatsApp</button><label style="margin-top:14px">Pulihkan dari file cadangan (yang dikirim ke WhatsApp)</label><input type="file" accept=".txt,.json,text/plain,application/json" data-f="restore"></div>';
+  return '<h2>Harga cuci</h2><div class="card">'+S.cfg.tarif.map(function(t){return '<div class="item"><span>'+esc(t.nama)+'</span><input style="width:140px" type="text" class="rp" inputmode="numeric" data-f="tarif:'+t.id+'" value="'+t.harga+'"></div>'}).join('')+'<div class="sub" style="margin-top:8px">Harga ini otomatis terisi saat mencatat cuci, dan tetap bisa diubah per cucian.</div></div>'
+   +dt('ks','Nama kasir di struk','<input data-f="kasir" placeholder="Nama kasir" value="'+esc(S.cfg.kasir||'')+'">')
+   +dt('pr','Promo cuci gratis','<div class="item" style="border:0;padding:0"><span>Aktifkan promo</span><button class="tgb'+(promo().on?' on':'')+'" data-a="promoon" aria-label="Aktifkan promo"></button></div><label>Gratis 1 kali setelah berapa kali cuci berbayar</label><input type="number" inputmode="numeric" data-f="promon" value="'+promo().n+'"><div class="sub" style="margin-top:6px">Kalau mati, tombol dan tulisan promo tidak muncul.</div>')
+   +dt('cd','Cadangan data','<div class="sub" style="margin:0 0 10px">'+bkInfo()+'</div><button class="btn full" style="margin-top:0" data-a="backup">Kirim cadangan ke WhatsApp</button><label style="margin-top:14px">Pulihkan dari file cadangan (yang dikirim ke WhatsApp)</label><input type="file" accept=".txt,.json,text/plain,application/json" data-f="restore">');
 }
 function waText(per){
   var d=new Date(),k=ymd(d),pre=k.slice(0,7),day=per!=='month';
