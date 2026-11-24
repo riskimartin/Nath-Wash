@@ -70,6 +70,18 @@ table{width:100%;border-collapse:collapse;font-size:12.5px}th{color:var(--mut);f
 .paychips{display:flex;gap:4px;background:var(--bl2);border-radius:12px;padding:4px;margin:6px 0 4px}
 #qov{position:fixed;inset:0;background:rgba(5,15,30,.94);z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:12px}
 #qov img{max-width:100%;max-height:calc(100% - 150px);border-radius:12px;background:#fff}
+@media (min-width:768px){
+.wrap{max-width:920px;padding:24px}
+.grid{grid-template-columns:repeat(3,1fr)}
+.kpi.big{grid-column:1/-1}
+}
+@media (min-width:1100px){
+body{padding-left:280px}
+.wrap{max-width:980px;padding:32px}
+#mbtn,#scrim{display:none!important}
+.top h1{display:none}
+#drawer{transform:none!important;visibility:visible!important;width:280px;border-radius:0;transition:none}
+}
 </style>
 </head>
 <body>
@@ -111,6 +123,29 @@ function cloudSave(){if(!FS)return;var c=S.cfg,cf={tarif:c.tarif,kar:c.kar,wa:c.
 function saveCfg(){if(CLOUD)cloudSave();else saveLocal();render()}
 function addTx(t){S.tx.push(t);if(CLOUD)FS.collection('tx').doc(t.id).set(t).catch(fbErr);else saveLocal();render()}
 function delTx(id){S.tx=S.tx.filter(function(t){return t.id!==id});if(CLOUD)FS.collection('tx').doc(id).delete().catch(fbErr);else saveLocal();render()}
+function editTx(id){
+  var t=S.tx.filter(function(x){return x.id===id})[0];if(!t)return;
+  var T=S.cfg.tarif,jid=(T.filter(function(x){return x.nama===t.jn})[0]||{}).id||'';
+  var o=$('#qov');
+  o.innerHTML='<div class="card" style="width:100%;max-width:420px;max-height:92%;overflow:auto;margin:0"><b style="font-size:16px">Edit transaksi</b><div class="sub">'+esc(t.no||'')+'</div>'
+   +'<label>Tanggal</label><input type="date" id="ed-tgl" value="'+esc(t.tgl)+'">'
+   +'<label>Jenis</label><select id="ed-jn">'+T.map(function(x){return '<option value="'+x.id+'"'+(jid===x.id?' selected':'')+'>'+esc(x.nama)+'</option>'}).join('')+(jid?'':'<option value="" selected>'+esc(t.jn)+' (lama)</option>')+'</select>'
+   +'<label>Harga</label><input type="number" inputmode="numeric" id="ed-hg" value="'+t.harga+'">'
+   +'<label>Pembayaran</label><select id="ed-py">'+PAYS.map(function(x){return '<option value="'+x[0]+'"'+((t.pay||'tunai')===x[0]?' selected':'')+'>'+x[1]+'</option>'}).join('')+'</select>'
+   +'<label>Plat / keterangan</label><input id="ed-pl" value="'+esc(t.plat||'')+'">'
+   +'<label>Dicuci oleh</label><select id="ed-kd"><option value="">– tidak dipilih –</option>'+S.cfg.kar.map(function(k){return '<option value="'+k.id+'"'+(t.kid===k.id?' selected':'')+'>'+esc(k.nama)+'</option>'}).join('')+'</select>'
+   +'<div class="row" style="margin-top:14px"><button class="btn sec" style="flex:1" data-a="qtutup">Batal</button><button class="btn" style="flex:1" data-a="edsave" data-v="'+id+'">Simpan</button></div></div>';
+  o.style.display='flex'}
+function saveEdit(id){
+  var t=S.tx.filter(function(x){return x.id===id})[0];if(!t)return;
+  var h=Number($('#ed-hg').value);if(!(h>0)){toast('Isi harga lebih dari 0');return}
+  var tg=$('#ed-tgl').value;if(!tg){toast('Isi tanggal');return}
+  var tr=S.cfg.tarif.filter(function(x){return x.id===$('#ed-jn').value})[0];
+  if(tr){t.jn=tr.nama;t.tp=tr.tp}
+  t.tgl=tg;t.harga=h;t.pay=$('#ed-py').value;if(t.pay!=='tunai')t.bayar=0;t.plat=$('#ed-pl').value.trim();
+  t.kid=$('#ed-kd').value;t.kn=t.kid?kname(t.kid):'';
+  if(CLOUD)FS.collection('tx').doc(id).set(t).catch(fbErr);else saveLocal();
+  $('#qov').style.display='none';render();toast('Transaksi diperbarui')}
 function kname(id,fb){var k=S.cfg.kar.filter(function(x){return x.id===id})[0];return k?k.nama:(fb||'–')}
 
 function viewRing(){
@@ -129,6 +164,13 @@ function viewRing(){
   var days=[],i;for(i=6;i>=0;i--){var d=new Date();d.setDate(d.getDate()-i);days.push(d)}
   var vals=days.map(function(d){var k=ymd(d),s=0;S.tx.forEach(function(t){if(t.tgl===k)s+=t.harga});return s}),mx=Math.max.apply(null,vals.concat([1]));
   h+='<h2>7 hari terakhir</h2><div class="card"><div class="bars">'+vals.map(function(v,j){return '<div title="'+R(v)+'"><i style="height:'+Math.round(v/mx*70)+'px"></i>'+days[j].getDate()+'</div>'}).join('')+'</div></div>';
+  var nd=new Date(),cm=ymd(nd).slice(0,7),pd=new Date(nd.getFullYear(),nd.getMonth()-1,1),pm=ymd(pd).slice(0,7),cs=0,ps=0,cn=0,pn=0;
+  S.tx.forEach(function(t){var m=t.tgl.slice(0,7);if(m===cm){cs+=t.harga;cn++}else if(m===pm){ps+=t.harga;pn++}});
+  var pc=ps>0?Math.round((cs-ps)/ps*100):null,bl=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'],mx2=Math.max(cs,ps,1);
+  h+='<h2>Dibanding bulan lalu</h2><div class="card">'
+   +'<div class="item" style="border:0;padding:0 0 4px"><span>'+bl[nd.getMonth()]+' (bulan ini)</span><span class="r">'+R(cs)+'</span></div><div style="background:var(--bl2);border-radius:6px;height:10px"><i style="display:block;height:10px;border-radius:6px;background:var(--tl);width:'+Math.round(cs/mx2*100)+'%"></i></div><div class="sub">'+cn+' kali cuci</div>'
+   +'<div class="item" style="border:0;padding:12px 0 4px"><span>'+bl[pd.getMonth()]+' (bulan lalu)</span><span class="r">'+R(ps)+'</span></div><div style="background:var(--bl2);border-radius:6px;height:10px"><i style="display:block;height:10px;border-radius:6px;background:var(--bl);width:'+Math.round(ps/mx2*100)+'%"></i></div><div class="sub">'+pn+' kali cuci</div>'
+   +'<div style="margin-top:12px;font-weight:700;color:'+(pc===null?'var(--mut)':pc>=0?'var(--ok)':'var(--warn)')+'">'+(pc===null?'Belum ada data bulan lalu':(pc>=0?'▲ naik ':'▼ turun ')+Math.abs(pc)+'% dari bulan lalu')+'</div></div>';
   var low=S.cfg.sabun.filter(function(s){return s.stok<=s.min});
   if(low.length)h+='<h2>Stok sabun menipis</h2><div class="card">'+low.map(function(s){return '<div class="item"><span>'+esc(s.nama)+'</span><span><span class="tag">sisa '+s.stok+' '+esc(s.satuan)+'</span></span></div>'}).join('')+'</div>';
   h+=waBox();
@@ -164,7 +206,7 @@ function viewCuci(){
    +'<label>Dicuci oleh</label><select data-f="kid"><option value="">– tidak dipilih –</option>'+S.cfg.kar.map(function(k){return '<option value="'+k.id+'"'+(f.kid===k.id?' selected':'')+'>'+esc(k.nama)+'</option>'}).join('')+'</select>'
    +'<button class="btn full" data-a="catat">Catat</button></div>';
   var L=S.tx.slice().sort(function(a,b){return b.ts-a.ts}).slice(0,25);
-  h+='<h2>Cucian terakhir</h2><div class="card">'+(L.length?L.map(function(t){return '<div class="item"><div>'+esc(t.jn)+(t.plat?' · '+esc(t.plat):'')+'<small>'+t.tgl+' · '+esc(kname(t.kid,t.kn))+' · '+payName(t.pay)+'</small></div><div class="row" style="flex:none"><span class="r">'+R(t.harga)+'</span><button class="btn sec sm" data-a="struk" data-v="'+t.id+'">Struk</button>'+(ROLE==='owner'?'<button class="btn del sm" data-a="deltx" data-v="'+t.id+'">'+(ui.del===t.id?'Yakin?':'Hapus')+'</button>':'')+'</div></div>'}).join(''):'<div class="empty">Belum ada data.</div>')+'</div>';
+  h+='<h2>Cucian terakhir</h2><div class="card">'+(L.length?L.map(function(t){return '<div class="item"><div>'+esc(t.jn)+(t.plat?' · '+esc(t.plat):'')+'<small>'+t.tgl+' · '+esc(kname(t.kid,t.kn))+' · '+payName(t.pay)+'</small></div><div class="row" style="flex:none"><span class="r">'+R(t.harga)+'</span><button class="btn sec sm" data-a="struk" data-v="'+t.id+'">Struk</button>'+(ROLE==='owner'?'<button class="btn sec sm" data-a="edtx" data-v="'+t.id+'">Edit</button><button class="btn del sm" data-a="deltx" data-v="'+t.id+'">'+(ui.del===t.id?'Yakin?':'Hapus')+'</button>':'')+'</div></div>'}).join(''):'<div class="empty">Belum ada data.</div>')+'</div>';
   return h;
 }
 function viewSabun(){
@@ -319,6 +361,8 @@ document.addEventListener('click',function(e){try{onClick(e)}catch(err){toast('E
 function onClick(e){
   var b=e.target.closest('[data-a]');if(!b)return;var a=b.dataset.a,v=b.dataset.v;
   if(a==='menu'){menu(true)}
+  else if(a==='edtx'){editTx(v)}
+  else if(a==='edsave'){saveEdit(v)}
   else if(a==='menux'){menu(false)}
   else if(a==='qmenu'){menu(false);var o=$('#qov');o.innerHTML='<div style="color:#fff;font-size:20px;font-weight:700;text-align:center">QRIS Nath Wash</div><img src="qris.png" alt="QRIS Nath Wash"><div style="color:#CFE0FA;font-size:13px;text-align:center">Pelanggan mengisi nominal sendiri.</div><button class="btn" data-a="qtutup">Tutup</button>';o.style.display='flex'}
   else if(a==='logout'){menu(false);if(AU)AU.signOut()}
