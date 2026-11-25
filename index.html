@@ -136,6 +136,13 @@ body[data-tab=ring] .top{display:none}
 .hsub div{background:rgba(255,255,255,.1);border-radius:14px;padding:11px 13px;font-size:12px;color:#CFE0FA}
 .hsub i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
 .hsub b{display:block;font-size:15px;color:#fff;font-weight:700;margin-top:2px}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+.mt{background:color-mix(in srgb,var(--c) 13%,var(--card));border-radius:20px;padding:16px;min-width:0}
+.mi{display:flex;width:38px;height:38px;border-radius:12px;background:var(--card);align-items:center;justify-content:center;font-size:20px;margin-bottom:10px}
+.ml{display:block;font-size:13px;color:var(--mut)}
+.mt b{display:block;font-size:17px;font-weight:700;margin-top:2px;word-break:break-word}
+.mt small{display:block;font-size:11px;color:var(--mut);margin-top:2px}
+.mgrid{margin-bottom:12px}
 </style>
 </head>
 <body>
@@ -269,16 +276,13 @@ function viewRing(){
   var pl=ui.per==='day'?'hari ini':ui.per==='month'?'bulan ini':'semua waktu';
   var h='<div class="top2"><b>Nath Wash</b><select class="pill" data-a="persel" aria-label="Periode">'+[['day','Hari ini'],['month','Bulan ini'],['all','Semua']].map(function(c){return '<option value="'+c[0]+'"'+(ui.per===c[0]?' selected':'')+'>'+c[1]+'</option>'}).join('')+'</select></div>';
   h+='<div class="hcard"><div class="hrow"><span>Laba bersih '+pl+'</span><span class="htag">'+(ui.per==='month'&&pc!==null?(pc>=0?'▲ ':'▼ ')+Math.abs(pc)+'%':P.length+' kali cuci')+'</span></div><div class="hnum">'+R(tot-upah-ex)+'</div><div class="hsub"><div><i style="background:#4ADE80"></i>Pemasukan<b>'+R(tot)+'</b></div><div><i style="background:#FB923C"></i>Pengeluaran<b>'+R(ex)+'</b></div></div></div>';
-  var DN=['M','S','S','R','K','J','S'],days=[],i;for(i=6;i>=0;i--){var d=new Date();d.setDate(d.getDate()-i);days.push(d)}
-  var vals=days.map(function(d){var k=ymd(d),s=0;S.tx.forEach(function(t){if(t.tgl===k)s+=t.harga});return s}),mx=Math.max.apply(null,vals.concat([1]));
-  h+='<div class="bars2">'+vals.map(function(v){return '<i title="'+R(v)+'" style="height:'+Math.round(v/mx*76+8)+'px"></i>'}).join('')+'</div><div class="days2">'+days.map(function(d){return '<span>'+DN[d.getDay()]+'</span>'}).join('')+'</div>';
   var low=S.cfg.sabun.filter(function(s){return s.stok<=s.min});
   if(low.length)h+='<button class="warnline" data-a="tab" data-v="sabun">Stok sabun menipis: '+low.length+' item</button>';
   h+='<button class="more" data-a="det">'+(ui.det?'Tutup detail':'Lihat detail')+'</button>';
   if(ui.det){
     var o=paySum(P),names=Object.keys(by);
-    function rw(a,b){return '<div class="item"><span>'+a+'</span><span class="r">'+b+'</span></div>'}
-    h+='<div class="card" style="margin-top:8px">'+rw('Motor masuk',m+' kali')+rw('Mobil masuk',mo+' kali')+rw('Upah karyawan',R(upah)+(tkb>0?'<small>termasuk kasbon '+R(tkb)+'</small>':''))+rw('Tunai',R(o.tunai))+rw('QRIS',R(o.qris))+rw('Transfer',R(o.transfer))+'</div>';
+    function tl(ic,c,a,b,sm){return '<div class="mt" style="--c:'+c+'"><span class="ml">'+a+'</span><b>'+b+'</b>'+(sm?'<small>'+sm+'</small>':'')+'</div>'}
+    h+='<div class="mgrid">'+tl('🏍️','#6366F1','Motor masuk',m+' kali')+tl('🚗','#F43F5E','Mobil masuk',mo+' kali')+tl('💰','#F59E0B','Upah karyawan',R(upah),tkb>0?'termasuk kasbon '+R(tkb):'')+tl('💵','#22C55E','Tunai',R(o.tunai))+tl('📱','#14B8A6','QRIS',R(o.qris))+tl('🏦','#A855F7','Transfer',R(o.transfer))+'</div>';
     h+=dt('pj','Per jenis cuci',names.length?'<table><tr><th>Jenis</th><th>Jumlah</th><th>Total</th><th>Rata-rata</th></tr>'+names.map(function(n){var b=by[n];return '<tr><td>'+esc(n)+'</td><td>'+b.n+'</td><td>'+R(b.s)+'</td><td>'+R(b.s/b.n)+'</td></tr>'}).join('')+'</table>':'<div class="empty">Belum ada cucian pada periode ini.</div>');
     h+=dt('bl','Dibanding bulan lalu','<div class="item" style="border:0;padding:0 0 4px"><span>'+bl[nd.getMonth()]+' (bulan ini)</span><span class="r">'+R(cs)+'</span></div><div style="background:var(--bl2);border-radius:6px;height:10px"><i style="display:block;height:10px;border-radius:6px;background:var(--tl);width:'+Math.round(cs/mx2*100)+'%"></i></div><div class="sub">'+cn+' kali cuci</div><div class="item" style="border:0;padding:12px 0 4px"><span>'+bl[pd.getMonth()]+' (bulan lalu)</span><span class="r">'+R(ps)+'</span></div><div style="background:var(--bl2);border-radius:6px;height:10px"><i style="display:block;height:10px;border-radius:6px;background:var(--bl);width:'+Math.round(ps/mx2*100)+'%"></i></div><div class="sub">'+pn+' kali cuci</div><div style="margin-top:12px;font-weight:700;color:'+(pc===null?'var(--mut)':pc>=0?'var(--ok)':'var(--warn)')+'">'+(pc===null?'Belum ada data bulan lalu':(pc>=0?'▲ naik ':'▼ turun ')+Math.abs(pc)+'% dari bulan lalu')+'</div>');
     h+=dt('wa','Laporan ke WhatsApp',waBox());
