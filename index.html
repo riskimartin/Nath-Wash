@@ -254,24 +254,26 @@ function spHtml(){
     if(avail>0)h+='<button class="btn full" style="margin-top:0" data-a="gratis" data-v="'+esc(M[0].id)+'">'+(ui.del===M[0].id?'Yakin pakai gratis?':'Pakai cuci gratis')+'</button>'}
   else h+='<div class="sub" style="margin-bottom:6px">'+M.length+' transaksi cocok dari '+Object.keys(pl).length+' plat</div>';
   return h+M.slice(0,30).map(txRow).join('')}
-function kasCalc(tgl){var tn=0,bi=0,kb=0;
-  S.tx.forEach(function(t){if(t.tgl===tgl&&(t.pay||'tunai')==='tunai')tn+=t.harga});
+function RL(n){return n<0?'− '+R(-n):R(n)}
+function kasCalc(tgl){var P=S.tx.filter(function(t){return t.tgl===tgl}),tn=0,qr=0,tf=0,up=0,bi=0,kb=0,ut=0;
+  P.forEach(function(t){var y=t.pay||'tunai';if(y==='qris')qr+=t.harga;else if(y==='transfer')tf+=t.harga;else tn+=t.harga});
+  S.cfg.kar.forEach(function(k){var s=0;P.forEach(function(t){if(t.kid===k.id)s+=t.promo?t.hb:t.harga});up+=s*(k.persen||0)/100;(k.kasbon||[]).forEach(function(x){if(x.tgl===tgl)kb+=x.jml})});
   S.ex.forEach(function(e){if(e.tgl===tgl)bi+=e.jml});
-  S.cfg.kar.forEach(function(k){(k.kasbon||[]).forEach(function(x){if(x.tgl===tgl)kb+=x.jml})});
-  var md=Number(ui.tk.modal)||0;return {tn:tn,bi:bi,kb:kb,md:md,exp:md+tn-bi-kb}}
-function kasHasil(){var c=kasCalc(ui.tk.tgl),f=ui.tk.fisik,h='',qr=S.tx.filter(function(t){return t.tgl===ui.tk.tgl&&t.pay==='qris'}).reduce(function(a,t){return a+t.harga},0);
-  h+='<div class="item"><span>Modal awal laci</span><span class="r">'+R(c.md)+'</span></div><div class="item"><span>Pemasukan tunai</span><span class="r">'+R(c.tn)+'</span></div><div class="item" style="color:var(--mut)"><span>Pemasukan QRIS (di luar laci)</span><span class="r">'+R(qr)+'</span></div><div class="item"><span>Biaya</span><span class="r">− '+R(c.bi)+'</span></div><div class="item"><span>Kasbon karyawan</span><span class="r">− '+R(c.kb)+'</span></div><div class="item"><span><b>Seharusnya di laci</b></span><span class="r">'+R(c.exp)+'</span></div>';
-  if(f!==''){var sl=(Number(f)||0)-c.exp;h+='<div class="item"><span><b>Selisih</b></span><span class="r" style="color:'+(sl===0?'var(--ok)':'var(--warn)')+'">'+(sl===0?'Pas ✓':(sl>0?'Lebih ':'Kurang ')+R(Math.abs(sl)))+'</span></div>'}
+  (S.ut||[]).forEach(function(u){if(u.tgl===tgl)ut+=u.harga});
+  var tot=tn+qr+tf;return {tn:tn,qr:qr,tf:tf,tot:tot,up:up,bi:bi,kb:kb,ut:ut,laba:tot-up-bi,n:P.length}}
+function kasHasil(){var c=kasCalc(ui.tk.tgl),h='';
+  function rw(a,b,st){return '<div class="item"'+(st?' style="'+st+'"':'')+'><span>'+a+'</span><span class="r">'+b+'</span></div>'}
+  h+=rw('Pemasukan tunai',R(c.tn))+rw('Pemasukan QRIS',R(c.qr))+(c.tf>0?rw('Pemasukan transfer',R(c.tf)):'')+rw('<b>Total pemasukan</b>',R(c.tot))+rw('Upah karyawan','− '+R(c.up))+rw('Biaya','− '+R(c.bi))+rw('<b>Laba bersih</b>',RL(c.laba));
+  if(c.kb>0)h+=rw('Kasbon dipinjamkan (tidak mengurangi laba)',R(c.kb),'color:var(--mut)');
+  if(c.ut>0)h+=rw('Belum dibayar (belum dihitung)',R(c.ut),'color:var(--mut)');
   return h}
 function viewKas(){
   var K=S.cfg.kas||{},tg=ui.tk.tgl,sv=K[tg];
   var h='<h2>Tutup kas harian</h2><div class="card"><label>Tanggal</label><input type="date" data-f="tkt" value="'+esc(tg)+'">'
-   +'<label>Modal awal laci (opsional)</label><input type="text" class="rp" inputmode="numeric" data-f="tkm" value="'+esc(ui.tk.modal)+'">'
    +'<div id="tkhasil" style="margin-top:8px">'+kasHasil()+'</div>'
-   +'<label>Uang tunai di laci sekarang</label><input type="text" class="rp" inputmode="numeric" data-f="tkf" value="'+esc(ui.tk.fisik)+'">'
-   +'<button class="btn full" data-a="kassave">Simpan tutup kas</button>'+(sv?'<div class="sub" style="margin-top:8px">Sudah ditutup: di laci '+R(sv.fisik)+', selisih '+R(sv.sel)+'</div>':'')+'</div>';
+   +'<button class="btn full" data-a="kassave">Simpan tutup kas</button>'+(sv?'<div class="sub" style="margin-top:8px">'+(sv.laba!==undefined?'Sudah ditutup: laba bersih '+RL(sv.laba):'Sudah ditutup (format lama)')+'</div>':'')+'</div>';
   var ks=Object.keys(K).sort().reverse().slice(0,10);
-  h+=dt('rk','Riwayat tutup kas',(ks.length?ks.map(function(d){var x=K[d];return '<div class="item"><div>'+d+'<small>seharusnya '+R(x.exp)+' · di laci '+R(x.fisik)+'</small></div><span class="r" style="color:'+(x.sel===0?'var(--ok)':'var(--warn)')+'">'+(x.sel===0?'Pas':(x.sel>0?'+':'−')+R(Math.abs(x.sel)))+'</span></div>'}).join(''):'<div class="empty">Belum ada.</div>'));
+  h+=dt('rk','Riwayat tutup kas',(ks.length?ks.map(function(d){var x=K[d];return x.laba!==undefined?'<div class="item"><div>'+d+'<small>pemasukan '+R(x.tot)+' · biaya '+R(x.bi)+'</small></div><span class="r">'+RL(x.laba)+'</span></div>':'<div class="item"><div>'+d+'<small>format lama: di laci '+R(x.fisik)+'</small></div><span class="r" style="color:var(--mut)">'+(x.sel===0?'Pas':(x.sel>0?'+':'−')+R(Math.abs(x.sel)))+'</span></div>'}).join(''):'<div class="empty">Belum ada.</div>'));
   return h}
 function promo(){return S.cfg.promo||{on:false,n:10}}
 function theme(){try{return localStorage.getItem('nw_th')||'auto'}catch(e){return 'auto'}}
@@ -535,7 +537,7 @@ function onClick(e){
     var tr=S.cfg.tarif.filter(function(x){return x.nama===t0.jn})[0],nm=(tr&&tr.harga)||t0.hb||t0.harga,nw=new Date(),gid='t'+Date.now();
     ui.struk=gid;addTx({id:gid,pay:'tunai',bayar:0,ts:Date.now(),tgl:ymd(nw),jn:t0.jn,tp:t0.tp,harga:0,disk:nm,hb:nm,promo:true,kid:ui.form.kid||'',kn:ui.form.kid?kname(ui.form.kid):'',plat:t0.plat,ksr:ksrName(),uid:me?me.uid:'',no:'NW-'+ymd(nw).replace(/-/g,'').slice(2)+'-'+p2(nw.getHours())+p2(nw.getMinutes())+p2(nw.getSeconds())});toast('Cuci gratis dicatat');window.scrollTo(0,0)}
   else if(a==='addkb'){var q=ui.kb[v]||{},j=Number(q.jml);if(!(j>0)){toast('Isi jumlah kasbon');return}S.cfg.kar.forEach(function(k){if(k.id===v){(k.kasbon=k.kasbon||[]).push({id:uid(),tgl:ymd(new Date()),jml:j,ket:(q.ket||'').trim()})}});ui.kb[v]={};saveCfg();toast('Kasbon dicatat')}
-  else if(a==='kassave'){var tk=ui.tk;if(tk.fisik===''){toast('Isi uang tunai di laci');return}var c=kasCalc(tk.tgl),fs=Number(tk.fisik)||0;(S.cfg.kas=S.cfg.kas||{})[tk.tgl]={fisik:fs,modal:c.md,exp:c.exp,sel:fs-c.exp,ts:Date.now()};saveCfg();toast('Tutup kas disimpan')}
+  else if(a==='kassave'){var tk=ui.tk,c=kasCalc(tk.tgl);(S.cfg.kas=S.cfg.kas||{})[tk.tgl]={tn:c.tn,qr:c.qr,tf:c.tf,tot:c.tot,up:c.up,bi:c.bi,laba:c.laba,ts:Date.now()};saveCfg();toast('Tutup kas disimpan')}
   else if(a==='edsave'){saveEdit(v)}
   else if(a==='menux'){menu(false)}
   else if(a==='qmenu'){menu(false);var o=$('#qov');o.innerHTML='<div style="color:#fff;font-size:20px;font-weight:700;text-align:center">QRIS Nath Wash</div><img src="qris.png" alt="QRIS Nath Wash"><div style="color:#CFE0FA;font-size:13px;text-align:center">Pelanggan mengisi nominal sendiri.</div><button class="btn" data-a="qtutup">Tutup</button>';o.style.display='flex'}
