@@ -304,7 +304,7 @@ function discRow(t){return t.disk>0?'<div class="rw"><span>'+(t.promo?'Promo cuc
 function perLabel(){var d=new Date();return ui.per==='day'?'Hari ini ('+ymd(d)+')':ui.per==='month'?d.toLocaleDateString('id-ID',{month:'long',year:'numeric'}):'Semua waktu'}
 function karMsg(k,n,sm,u){var up=u*(k.persen||0)/100,kb=kbSum(k);
   var tx=['*Penghasilan - Nath Wash*','Sistem bagi hasil '+(k.persen||0)+'%','Nama: '+k.nama,'Periode: '+perLabel(),'--------------------------------','Jumlah cuci: '+n];
-  var JB={};S.tx.filter(function(t){return t.kid===k.id&&inP(t)&&isW(t)}).forEach(function(t){JB[t.jn]=(JB[t.jn]||0)+1});Object.keys(JB).forEach(function(n3){tx.push('- '+n3+' '+JB[n3]+'x')});
+  var JB={};S.tx.filter(function(t){return t.kid===k.id&&inP(t)&&isW(t)}).forEach(function(t){var q=JB[t.jn]||(JB[t.jn]={n:0,s:0});q.n++;q.s+=(t.promo?t.hb:t.harga)-(t.promo?0:(t.ad||0))});Object.keys(JB).forEach(function(n3){tx.push('- '+n3+' '+JB[n3].n+'x: '+R(JB[n3].s*(k.persen||0)/100))});
   var TB={};S.tx.filter(function(t){return t.kid===k.id&&inP(t)}).forEach(function(t){if(!isW(t)){var q=TB[t.jn]||(TB[t.jn]={n:0,s:0});q.n++;q.s+=t.harga}(t.add||[]).forEach(function(x){var q=TB[x.n]||(TB[x.n]={n:0,s:0});q.n++;q.s+=x.h})});
   var TK=Object.keys(TB);if(TK.length){tx.push('Tambahan:');TK.forEach(function(n2){tx.push('- '+n2+' '+TB[n2].n+'x: '+R(TB[n2].s*(k.persen||0)/100))})}
   tx.push('Upah: '+R(up));
