@@ -179,10 +179,10 @@ body[data-tab=cuci]{padding-bottom:calc(200px + env(safe-area-inset-bottom,0px))
 <nav id="bnav"></nav>
 <script>
 var CLOUD=!!(window.NW_FB&&NW_FB.apiKey&&NW_FB.projectId),ROLE="owner",FS=null,AU=null,me=null,UN=[];
-var TABS=[['ring','Ringkasan'],['cuci','Cuci'],['ut','Belum bayar'],['qris','QRIS'],['sabun','Sabun'],['kar','Karyawan'],['ex','Biaya'],['kas','Tutup Kas'],['atur','Tarif']];
+var TABS=[['ring','Ringkasan'],['cuci','Cuci'],['ut','Belum bayar'],['qris','QRIS'],['sabun','Sabun'],['kar','Karyawan'],['ex','Biaya'],['kas','Tutup Kas'],['atur','Tarif'],['rw','Riwayat Cucian']];
 var ICO={tema:'<circle cx="12" cy="12" r="8"/><path d="M12 4v16"/>',kas:'<rect x="3.5" y="6" width="17" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6.5 9.5v.01M17.5 14.5v.01"/>',ring:'<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>',cuci:'<path d="M12 3.5c3.5 4.2 5.5 7 5.5 10a5.5 5.5 0 0 1-11 0c0-3 2-5.8 5.5-10z"/>',qris:'<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><path d="M14 14h2.5v2.5M20 14v.01M14 20h2.5M20 17v3h-2"/>',sabun:'<path d="M10 3h4v3h-4zM9 6h6l1.5 3v10.5a1.5 1.5 0 0 1-1.5 1.5H9a1.5 1.5 0 0 1-1.5-1.5V9z"/><path d="M10 13h4v4h-4z"/>',kar:'<circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M15.5 4.8a3.5 3.5 0 0 1 0 6.4M18 14.5c1.8.9 3 2.8 3 5.5"/>',ex:'<path d="M6 3h12v18l-2.4-1.6L13.2 21 10.8 19.4 8.4 21 6 19.4zM9 8h6M9 12h6M9 16h3"/>',atur:'<path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3a1.5 1.5 0 0 1 0 2.1l-6.4 6.4a1.5 1.5 0 0 1-2.1 0z"/><circle cx="8" cy="8" r="1.3"/>',out:'<path d="M9 3.5H5.5a1.5 1.5 0 0 0-1.5 1.5v14a1.5 1.5 0 0 0 1.5 1.5H9M16 8l4 4-4 4M20 12H9"/>'};
 function ico(k){return '<svg class="ic" viewBox="0 0 24 24">'+ICO[k]+'</svg>'}
-ICO.ut='<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>';ICO.plus='<path d="M12 5v14M5 12h14"/>';ICO.menu='<path d="M4 7h16M4 12h16M4 17h16"/>';
+ICO.rw='<path d="M4 12a8 8 0 1 0 2.5-5.8L4 8.5"/><path d="M4 4v4.5h4.5M12 8v4l3 2"/>';ICO.ut='<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>';ICO.plus='<path d="M12 5v14M5 12h14"/>';ICO.menu='<path d="M4 7h16M4 12h16M4 17h16"/>';
 function dt(k,t,b,f){return '<details class="opt" data-o="'+k+'"'+((ui.od[k]||f)?' open':'')+'><summary>'+t+'</summary>'+b+'</details>'}
 document.addEventListener('toggle',function(e){var d=e.target;if(d&&d.dataset&&d.dataset.o)ui.od[d.dataset.o]=d.open},true);
 document.addEventListener('change',function(e){if(e.target.dataset&&e.target.dataset.a==='persel'){ui.per=e.target.value;render()}});
@@ -275,6 +275,19 @@ function kasHasil(){var c=kasCalc(ui.tk.tgl),h='';
   if(c.kb>0)h+=rw('Kasbon dipinjamkan (tidak mengurangi laba)',R(c.kb),'color:var(--mut)');
   if(c.ut>0)h+=rw('Belum dibayar (belum dihitung)',R(c.ut),'color:var(--mut)');
   return h}
+function viewRw(){
+  var md=ui.rmode==='month',y=new Date();y.setDate(y.getDate()-1);var td=ymd(new Date()),rdv=ui.rd||ymd(y),rmv=ui.rm||td.slice(0,7);
+  var ch='<div class="chips">'+[['day','Per hari'],['month','Per bulan']].map(function(c){return '<button class="chip'+((md?'month':'day')===c[0]?' on':'')+'" data-a="rmode" data-v="'+c[0]+'">'+c[1]+'</button>'}).join('')+'</div>';
+  var inp=md?'<label>Bulan</label><input type="month" data-f="rm" max="'+td.slice(0,7)+'" value="'+esc(rmv)+'">':'<label>Tanggal</label><input type="date" data-f="rd" max="'+td+'" value="'+esc(rdv)+'">';
+  var L=S.tx.filter(function(x){return md?x.tgl.slice(0,7)===rmv:x.tgl===rdv}).sort(function(a,b){return b.ts-a.ts}),U=(S.ut||[]).filter(function(x){return md?x.tgl.slice(0,7)===rmv:x.tgl===rdv});
+  var body='';
+  if(!L.length)body='<div class="empty">Tidak ada cucian pada '+(md?'bulan':'tanggal')+' ini.</div>';
+  else{
+    body='<div class="sub" style="margin:8px 0">'+L.length+' cucian · '+R(L.reduce(function(a,x){return a+x.harga},0))+'</div>';
+    if(md){var G={};L.forEach(function(x){(G[x.tgl]=G[x.tgl]||[]).push(x)});body+=Object.keys(G).sort().reverse().map(function(d){var g=G[d];return '<div class="item" style="border:0;padding:12px 0 2px"><b>'+d+'</b><span class="r">'+g.length+' cucian · '+R(g.reduce(function(a,x){return a+x.harga},0))+'</span></div>'+g.map(txRow).join('')}).join('')}
+    else body+=L.map(txRow).join('')
+  }
+  return '<h2>Riwayat cucian</h2><div class="card">'+ch+inp+body+(U.length?'<div class="sub" style="margin-top:8px">Belum dibayar '+(md?'bulan':'tanggal')+' ini: '+U.length+' cucian (lihat di menu Belum bayar)</div>':'')+'</div>'}
 function viewKas(){
   var K=S.cfg.kas||{},tg=ui.tk.tgl,sv=K[tg];
   var h='<h2>Tutup kas harian</h2><div class="card"><label>Tanggal</label><input type="date" data-f="tkt" value="'+esc(tg)+'">'
@@ -372,7 +385,7 @@ function viewCuci(){
    +dt('op','Opsi lain','<label>Tanggal</label><input type="date" data-f="tgl" value="'+f.tgl+'">'+(manBox()?'':'<label>Harga (bisa diubah)</label><input type="text" class="rp" inputmode="numeric" data-f="harga" value="'+f.harga+'">')+dt('dk','Tambah diskon',''+'<label>Diskon (opsional)</label><div class="row"><select data-f="dtype"><option value="none"'+(f.dtype==='none'?' selected':'')+'>Tanpa diskon</option><option value="pct"'+(f.dtype==='pct'?' selected':'')+'>Persen (%)</option><option value="rp"'+(f.dtype==='rp'?' selected':'')+'>Rupiah (Rp)</option></select><input type="'+(f.dtype==='rp'?'text" class="rp':'number')+'" inputmode="'+(f.dtype==='rp'?'numeric':'decimal')+'" data-f="dval" placeholder="Nilai" value="'+esc(f.dval)+'"></div><div class="sub" id="dhint">'+dHint()+'</div>',f.dtype!=='none'),f.dtype!=='none')
    +'<button class="btn full desk" data-a="catat">Catat</button></div>';
   var td0=ymd(new Date()),L=S.tx.filter(function(x){return x.tgl===td0}).sort(function(a,b){return b.ts-a.ts});
-  h+='<h2>Cucian hari ini ('+L.length+')</h2><div class="card">'+(L.length?L.map(txRow).join(''):'<div class="empty">Belum ada cucian hari ini. Catatan hari sebelumnya tersimpan di Ringkasan &amp; Kas.</div>')+'</div>';
+  h+='<h2>Cucian hari ini ('+L.length+')</h2><div class="card">'+(L.length?L.map(txRow).join(''):'<div class="empty">Belum ada cucian hari ini. Cucian hari sebelumnya ada di menu Riwayat Cucian.</div>')+'</div>';
   return h;
 }
 function viewSabun(){
@@ -464,7 +477,7 @@ function viewEx(){
   h+='<h2>Biaya · total '+R(exSum())+'</h2><div class="card">'+(L.length?L.map(function(e){return '<div class="item"><div>'+esc(e.ket)+'<small>'+e.tgl+'</small></div><div class="row" style="flex:none"><span class="r">'+R(e.jml)+'</span><button class="btn del sm" data-a="delex" data-v="'+e.id+'">'+(ui.del===e.id?'Yakin?':'Hapus')+'</button></div></div>'}).join(''):'<div class="empty">Belum ada biaya pada periode ini.</div>')+'</div>';
   return h;
 }
-var V={ut:viewUt,kas:viewKas,ring:viewRing,cuci:viewCuci,sabun:viewSabun,kar:viewKar,ex:viewEx,atur:viewAtur};
+var V={rw:viewRw,ut:viewUt,kas:viewKas,ring:viewRing,cuci:viewCuci,sabun:viewSabun,kar:viewKar,ex:viewEx,atur:viewAtur};
 function nameOf(em){var n=String(em||'').split('@')[0];return n.charAt(0).toUpperCase()+n.slice(1)}
 function ksrName(){if(CLOUD&&me){return ROLE==='kasir'?nameOf(me.email):(S.cfg.kasir||nameOf(me.email))}return S.cfg.kasir||''}
 function loadJS(u){return new Promise(function(ok,no){var el=document.createElement('script');el.src=u;el.onload=ok;el.onerror=function(){no(new Error('Gagal memuat '+u))};document.head.appendChild(el)})}
@@ -566,6 +579,7 @@ function onClick(e){
   else if(a==='det'){ui.det=!ui.det;render()}
   else if(a==='tab'){menu(false);ui.tab=v;ui.del=null;render();window.scrollTo(0,0)}
   else if(a==='per'){ui.per=v;render()}
+  else if(a==='rmode'){ui.rmode=v;render()}
   else if(a==='catat'){ui.lain=false;
     var f=ui.form,t=S.cfg.tarif.filter(function(x){return x.id===f.jenis})[0],h0=Number(f.harga),dk=discAmt(h0,f),AD=adxList(),ad=adxSum(),h=h0-dk+ad;
     if(!t||!(h>0)){toast('Isi harga lebih dari 0');return}
@@ -624,7 +638,7 @@ document.addEventListener('input',function(e){
   else if(k==='tkf'||k==='tkm'){ui.tk[k==='tkf'?'fisik':'modal']=rv(e.target);var el2=$('#tkhasil');if(el2)el2.innerHTML=kasHasil()}
   else if(k==='sn'){ui.sn=rv(e.target)}
   else if(k.indexOf('ef:')===0){ui.ef[k.slice(3)]=rv(e.target)}
-  else if(k.indexOf(':')<0&&k!=='tkt'){ui.form[k]=rv(e.target);if(k==='dtype'||k==='dval'||k==='harga'){var dh=$('#dhint');if(dh)dh.innerHTML=dHint();var ct=$('#cbtn');if(ct)ct.textContent='Catat '+R(finalH())}if(k==='bayar'||k==='harga'){var kb=$('#kmb');if(kb)kb.innerHTML=kmbInfo()}}
+  else if(k.indexOf(':')<0&&k!=='tkt'&&k!=='rd'&&k!=='rm'){ui.form[k]=rv(e.target);if(k==='dtype'||k==='dval'||k==='harga'){var dh=$('#dhint');if(dh)dh.innerHTML=dHint();var ct=$('#cbtn');if(ct)ct.textContent='Catat '+R(finalH())}if(k==='bayar'||k==='harga'){var kb=$('#kmb');if(kb)kb.innerHTML=kmbInfo()}}
 });
 document.addEventListener('change',function(e){
   var k=e.target.dataset&&e.target.dataset.f;if(!k)return;var v=rv(e.target);
@@ -633,6 +647,8 @@ document.addEventListener('change',function(e){
   else if(k==='dtype'){render()}
   else if(k==='promon'){S.cfg.promo={on:promo().on,n:Math.max(2,Math.round(Number(v))||10)};saveCfg()}
   else if(k==='tkt'){ui.tk.tgl=v||ymd(new Date());render()}
+  else if(k==='rd'){ui.rd=v||'';render()}
+  else if(k==='rm'){ui.rm=v||'';render()}
   else if(k==='restore'){doRestore(e.target)}
   else if(k.indexOf('xtra:')===0){S.cfg.extra.forEach(function(x){if(x.id===k.slice(5))x.harga=Number(v)||0});saveCfg()}
   else if(k.indexOf('tarif:')===0){S.cfg.tarif.forEach(function(t){if(t.id===k.slice(6))t.harga=Number(v)||0});saveCfg()}
