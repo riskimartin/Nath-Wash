@@ -187,7 +187,7 @@ function dt(k,t,b,f){return '<details class="opt" data-o="'+k+'"'+((ui.od[k]||f)
 document.addEventListener('toggle',function(e){var d=e.target;if(d&&d.dataset&&d.dataset.o)ui.od[d.dataset.o]=d.open},true);
 document.addEventListener('change',function(e){if(e.target.dataset&&e.target.dataset.a==='persel'){ui.per=e.target.value;render()}});
 function menu(o){$('#drawer').classList.toggle('on',o);$('#scrim').classList.toggle('on',o)}
-var DEF={tarif:[{id:'mk',nama:'Motor Kecil',harga:15000,tp:'motor'},{id:'mb',nama:'Motor Besar',harga:20000,tp:'motor'},{id:'mobk',nama:'Mobil Kecil',harga:50000,tp:'mobil'},{id:'mobs',nama:'Mobil Sedang',harga:60000,tp:'mobil'},{id:'mobb',nama:'Mobil Besar',harga:70000,tp:'mobil'},{id:'ambal',nama:'Ambal',harga:0,tp:'lain'}],kar:[],sabun:[],extra:[{id:'angin',nama:'Tambah angin',harga:2000}]};
+var DEF={tarif:[{id:'mk',nama:'Motor Kecil',harga:15000,tp:'motor'},{id:'mb',nama:'Motor Besar',harga:20000,tp:'motor'},{id:'mobk',nama:'Mobil Kecil',harga:50000,tp:'mobil'},{id:'mobs',nama:'Mobil Sedang',harga:60000,tp:'mobil'},{id:'mobb',nama:'Mobil Besar',harga:70000,tp:'mobil'},{id:'ambal',nama:'Ambal',harga:0,tp:'lain',man:true},{id:'angin',nama:'Tambah angin',harga:0,tp:'lain',man:true}],kar:[],sabun:[],extra:[]};
 var S={cfg:JSON.parse(JSON.stringify(DEF)),tx:[],ex:[],ut:[]};
 var ui={tab:'ring',det:false,od:{},per:'day',lain:false,lo:null,lr:0,ll:false,del:null,qty:{},cr:7,kb:{},sp:'',tk:{tgl:ymd(new Date()),fisik:'',modal:''},form:{dtype:'none',dval:'',jenis:'mk',harga:15000,kid:'',plat:'',pay:'tunai',bayar:'',tgl:ymd(new Date())},dirty:false,auth:CLOUD?'wait':'ready',err:'',struk:null,sn:'',wr:'day',ef:{tgl:ymd(new Date()),ket:'',jml:''}};
 var col=null,mode='lokal';
@@ -198,6 +198,8 @@ document.addEventListener('input',function(e){var el=e.target;if(!el.classList||
   var pos=el.selectionStart,nb=el.value.slice(0,pos).replace(/\D/g,'').length,f=fmtRp(el.value);el.value=f;
   var i=0,c=0;while(i<f.length&&c<nb){if(/\d/.test(f[i]))c++;i++}try{el.setSelectionRange(i,i)}catch(x){}},true);
 function p2(n){return n<10?'0'+n:''+n}
+function jam(t){var d=new Date(t&&t.ts?t.ts:Date.now());return p2(d.getHours())+'.'+p2(d.getMinutes())}
+function manBox(){var t=S.cfg.tarif.filter(function(x){return x.id===ui.form.jenis})[0];if(!t||!t.man)return '';var v=Number(ui.form.harga)||0;return '<label>Harga '+esc(t.nama)+' (isi manual)</label><input type="text" class="rp" inputmode="numeric" data-f="harga" placeholder="Ketik nominal" value="'+(v?v:'')+'">'}
 function ymd(d){return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())}
 function R(n){return 'Rp'+Math.round(n||0).toLocaleString('id-ID')}
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
@@ -249,7 +251,7 @@ function finalH(){var h=Number(ui.form.harga)||0;return Math.max(0,h-discAmt(h,u
 function dHint(){var h=Number(ui.form.harga)||0,d=discAmt(h,ui.form);return d>0?'Diskon '+R(d)+' → harga akhir <b>'+R(h-d)+'</b>':''}
 function kbSum(k){return (k.kasbon||[]).filter(inP).reduce(function(a,x){return a+x.jml},0)}
 function normP(x){return String(x||'').toUpperCase().replace(/[^A-Z0-9]/g,'')}
-function txRow(t){return '<div class="item"><div>'+esc(t.jn)+(t.plat?' · '+esc(t.plat):'')+(t.add&&t.add.length?' + '+t.add.map(function(x){return esc(x.n)}).join(', '):'')+'<small>'+t.tgl+' · '+esc(kname(t.kid,t.kn))+' · '+payName(t.pay)+(t.promo?' · promo gratis':t.disk>0?' · diskon '+R(t.disk):'')+'</small></div><div class="row" style="flex:none"><span class="r">'+R(t.harga)+'</span><button class="btn sec sm" data-a="struk" data-v="'+t.id+'">Struk</button>'+(ROLE==='owner'?'<button class="btn sec sm" data-a="edtx" data-v="'+t.id+'">Edit</button><button class="btn del sm" data-a="deltx" data-v="'+t.id+'">'+(ui.del===t.id?'Yakin?':'Hapus')+'</button>':'')+'</div></div>'}
+function txRow(t){return '<div class="item"><div>'+esc(t.jn)+(t.plat?' · '+esc(t.plat):'')+(t.add&&t.add.length?' + '+t.add.map(function(x){return esc(x.n)}).join(', '):'')+'<small>'+t.tgl+' · '+jam(t)+' · '+esc(kname(t.kid,t.kn))+' · '+payName(t.pay)+(t.promo?' · promo gratis':t.disk>0?' · diskon '+R(t.disk):'')+'</small></div><div class="row" style="flex:none"><span class="r">'+R(t.harga)+'</span><button class="btn sec sm" data-a="struk" data-v="'+t.id+'">Struk</button>'+(ROLE==='owner'?'<button class="btn sec sm" data-a="edtx" data-v="'+t.id+'">Edit</button><button class="btn del sm" data-a="deltx" data-v="'+t.id+'">'+(ui.del===t.id?'Yakin?':'Hapus')+'</button>':'')+'</div></div>'}
 function spHtml(){
   var q=normP(ui.sp);if(!q)return '';
   var M=S.tx.filter(function(t){return normP(t.plat).indexOf(q)>=0}).sort(function(a,b){return b.ts-a.ts});
@@ -310,7 +312,7 @@ function viewUt(){
   var h='<h2>Belum dibayar</h2><div class="sub">Ketuk Lunas kalau pelanggan sudah membayar.</div>';
   if(!L.length)return h+'<div class="card empty">Tidak ada cucian yang belum dibayar.</div>';
   L.forEach(function(u){var o=ui.lo===u.id,late=u.tgl!==td;
-    h+='<div class="card"><div class="item" style="border:0;padding:0"><div>'+esc(u.plat||u.jn)+'<small'+(late?' style="color:var(--warn)"':'')+'>'+esc(u.jn)+(u.kn?', dicuci '+esc(u.kn):'')+', '+(late?u.tgl:'hari ini')+'</small></div><div class="r">'+R(u.harga)+'</div></div>'
+    h+='<div class="card"><div class="item" style="border:0;padding:0"><div>'+esc(u.plat||u.jn)+'<small'+(late?' style="color:var(--warn)"':'')+'>'+esc(u.jn)+(u.kn?', dicuci '+esc(u.kn):'')+', '+(late?u.tgl:'hari ini')+' '+jam(u)+'</small></div><div class="r">'+R(u.harga)+'</div></div>'
      +'<div class="row" style="margin-top:10px"><button class="btn sm" data-a="lt" data-v="'+u.id+'">Lunas tunai</button><button class="btn sec sm" data-a="lq" data-v="'+u.id+'">Lunas QRIS</button><button class="btn del sm" data-a="delut" data-v="'+u.id+'">'+(ui.del===u.id?'Yakin?':'Hapus')+'</button></div>'
      +(o?'<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">'+uangH(u.harga,ui.lr,ui.ll,'lr','kb2')+'<button class="btn full" data-a="lok" data-v="'+u.id+'">Konfirmasi lunas</button></div>':'')+'</div>'});
   return h}
@@ -364,9 +366,9 @@ function showQris(){var h=finalH(),o=$('#qov');o.innerHTML='<div style="color:#f
 function viewCuci(){
   var f=ui.form,T=S.cfg.tarif;if(S.cfg.kar.length===1&&!f.kid)f.kid=S.cfg.kar[0].id;
   var h=utLine()+strukBox()+'<div class="card" style="margin-top:6px"><label>Jenis cuci</label><div class="wchips g3">'+T.map(function(t){return '<button class="chip'+(f.jenis===t.id?' on':'')+'" data-a="jn" data-v="'+t.id+'">'+esc(t.nama)+'</button>'}).join('')+'</div>'+(S.cfg.kar.length>1?'<label>Dicuci oleh</label><div class="wchips">'+S.cfg.kar.map(function(k){return '<button class="chip'+(f.kid===k.id?' on':'')+'" data-a="kid" data-v="'+k.id+'">'+esc(k.nama)+'</button>'}).join('')+'</div>':'')
-   +exBox()
+   +manBox()+exBox()
    +'<label>Nama motor'+(f.pay==='utang'?' (wajib, supaya tidak tertukar)':' (opsional)')+'</label><input data-f="plat" placeholder="Contoh: Vario putih" value="'+esc(f.plat||'')+'">'+payBox()
-   +dt('op','Opsi lain','<label>Tanggal</label><input type="date" data-f="tgl" value="'+f.tgl+'"><label>Harga (bisa diubah)</label><input type="text" class="rp" inputmode="numeric" data-f="harga" value="'+f.harga+'">'+dt('dk','Tambah diskon',''+'<label>Diskon (opsional)</label><div class="row"><select data-f="dtype"><option value="none"'+(f.dtype==='none'?' selected':'')+'>Tanpa diskon</option><option value="pct"'+(f.dtype==='pct'?' selected':'')+'>Persen (%)</option><option value="rp"'+(f.dtype==='rp'?' selected':'')+'>Rupiah (Rp)</option></select><input type="'+(f.dtype==='rp'?'text" class="rp':'number')+'" inputmode="'+(f.dtype==='rp'?'numeric':'decimal')+'" data-f="dval" placeholder="Nilai" value="'+esc(f.dval)+'"></div><div class="sub" id="dhint">'+dHint()+'</div>',f.dtype!=='none'),f.dtype!=='none')
+   +dt('op','Opsi lain','<label>Tanggal</label><input type="date" data-f="tgl" value="'+f.tgl+'">'+(manBox()?'':'<label>Harga (bisa diubah)</label><input type="text" class="rp" inputmode="numeric" data-f="harga" value="'+f.harga+'">')+dt('dk','Tambah diskon',''+'<label>Diskon (opsional)</label><div class="row"><select data-f="dtype"><option value="none"'+(f.dtype==='none'?' selected':'')+'>Tanpa diskon</option><option value="pct"'+(f.dtype==='pct'?' selected':'')+'>Persen (%)</option><option value="rp"'+(f.dtype==='rp'?' selected':'')+'>Rupiah (Rp)</option></select><input type="'+(f.dtype==='rp'?'text" class="rp':'number')+'" inputmode="'+(f.dtype==='rp'?'numeric':'decimal')+'" data-f="dval" placeholder="Nilai" value="'+esc(f.dval)+'"></div><div class="sub" id="dhint">'+dHint()+'</div>',f.dtype!=='none'),f.dtype!=='none')
    +'<button class="btn full desk" data-a="catat">Catat</button></div>';
   var L=S.tx.slice().sort(function(a,b){return b.ts-a.ts}).slice(0,25);
   h+='<h2>Cucian terakhir</h2><div class="card">'+(L.length?L.map(txRow).join(''):'<div class="empty">Belum ada data.</div>')+'</div>';
@@ -440,17 +442,17 @@ function doRestore(inp){
   r.readAsText(f)
 }
 function waNum(n){n=String(n||'').replace(/\D/g,'');if(n.charAt(0)==='0')n='62'+n.slice(1);return n}
-function strukInfo(t){var same=S.tx.filter(function(x){return x.tgl===t.tgl}).sort(function(a,b){return a.ts-b.ts}),i=0;same.forEach(function(x,j){if(x.id===t.id)i=j+1});var no=t.no||('NW-'+t.tgl.replace(/-/g,'').slice(2)+'-'+(i<10?'00':i<100?'0':'')+i);var tg=new Date(t.tgl+'T00:00:00').toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});return{no:no,tg:tg}}
-function strukText(t){var s=strukInfo(t);return ['*NATH WASH*','Cuci Motor · Cuci Mobil · Cuci Ambal','WhatsApp 085705106177','--------------------------------','No: '+s.no,'Tanggal: '+s.tg,'Layanan: '+t.jn+(t.plat?' ('+t.plat+')':'')+addText(t),'Petugas: '+kname(t.kid,t.kn)+((t.ksr||S.cfg.kasir)?'\nKasir: '+(t.ksr||S.cfg.kasir):''),'--------------------------------',(t.disk>0?'Harga normal: '+R(t.hb||t.harga)+'\n'+(t.promo?'Promo cuci gratis: ':'Diskon: ')+'-'+R(t.disk)+'\n':'')+'*TOTAL: '+R(t.harga)+'*'+payText(t),'','Terima kasih sudah mencuci di Nath Wash.'].join('\n')}
+function strukInfo(t){var same=S.tx.filter(function(x){return x.tgl===t.tgl}).sort(function(a,b){return a.ts-b.ts}),i=0;same.forEach(function(x,j){if(x.id===t.id)i=j+1});var no=t.no||('NW-'+t.tgl.replace(/-/g,'').slice(2)+'-'+(i<10?'00':i<100?'0':'')+i);var tg=new Date(t.tgl+'T00:00:00').toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});return{no:no,tg:tg,jm:jam(t)}}
+function strukText(t){var s=strukInfo(t);return ['*NATH WASH*','Cuci Motor · Cuci Mobil · Cuci Ambal','WhatsApp 085705106177','--------------------------------','No: '+s.no,'Tanggal: '+s.tg,'Jam: '+s.jm,'Layanan: '+t.jn+(t.plat?' ('+t.plat+')':'')+addText(t),'Petugas: '+kname(t.kid,t.kn)+((t.ksr||S.cfg.kasir)?'\nKasir: '+(t.ksr||S.cfg.kasir):''),'--------------------------------',(t.disk>0?'Harga normal: '+R(t.hb||t.harga)+'\n'+(t.promo?'Promo cuci gratis: ':'Diskon: ')+'-'+R(t.disk)+'\n':'')+'*TOTAL: '+R(t.harga)+'*'+payText(t),'','Terima kasih sudah mencuci di Nath Wash.'].join('\n')}
 function strukBox(){
   var t=S.tx.filter(function(x){return x.id===ui.struk})[0];if(!t)return '';
   var s=strukInfo(t),url='https://wa.me/'+waNum(ui.sn)+'?text='+encodeURIComponent(strukText(t));
-  return '<h2>Struk</h2><div class="card"><div id="struk"><div class="c"><b>NATH WASH</b><br>Cuci Motor · Mobil · Ambal<br>WA 085705106177</div><hr><div class="rw"><span>No</span><span>'+s.no+'</span></div><div class="rw"><span>Tanggal</span><span>'+s.tg+'</span></div><div class="rw"><span>Petugas</span><span>'+esc(kname(t.kid,t.kn))+'</span></div>'+((t.ksr||S.cfg.kasir)?'<div class="rw"><span>Kasir</span><span>'+esc(t.ksr||S.cfg.kasir)+'</span></div>':'')+'<hr><div class="rw"><span>'+esc(t.jn)+(t.plat?'<br>'+esc(t.plat):'')+'</span><span>'+R(t.hb||t.harga)+'</span></div>'+addRows(t)+discRow(t)+'<hr><div class="rw"><b>TOTAL</b><b>'+R(t.harga)+'</b></div>'+payRows(t)+'<hr><div class="c">Terima kasih</div></div>'
+  return '<h2>Struk</h2><div class="card"><div id="struk"><div class="c"><b>NATH WASH</b><br>Cuci Motor · Mobil · Ambal<br>WA 085705106177</div><hr><div class="rw"><span>No</span><span>'+s.no+'</span></div><div class="rw"><span>Tanggal</span><span>'+s.tg+'</span></div><div class="rw"><span>Jam</span><span>'+s.jm+'</span></div><div class="rw"><span>Petugas</span><span>'+esc(kname(t.kid,t.kn))+'</span></div>'+((t.ksr||S.cfg.kasir)?'<div class="rw"><span>Kasir</span><span>'+esc(t.ksr||S.cfg.kasir)+'</span></div>':'')+'<hr><div class="rw"><span>'+esc(t.jn)+(t.plat?'<br>'+esc(t.plat):'')+'</span><span>'+R(t.hb||t.harga)+'</span></div>'+addRows(t)+discRow(t)+'<hr><div class="rw"><b>TOTAL</b><b>'+R(t.harga)+'</b></div>'+payRows(t)+'<hr><div class="c">Terima kasih</div></div>'
    +'<label>Nomor WhatsApp pelanggan (opsional)</label><input type="tel" inputmode="tel" data-f="sn" placeholder="08xxxxxxxxxx" value="'+esc(ui.sn)+'">'
    +'<a class="btn full" style="display:block;text-align:center;text-decoration:none" href="'+url+'" target="_blank" rel="noopener">Kirim struk ke WhatsApp</a>'
    +'<div class="row" style="margin-top:10px"><button class="btn sec" data-a="cetak">Cetak</button><button class="btn sec" data-a="tutup">Tutup</button></div></div>';
 }
-function normT(t){return DEF.tarif.map(function(d){var s=(t||[]).filter(function(x){return x.id===d.id})[0];return s?{id:d.id,nama:d.nama,harga:Number(s.harga)||0,tp:d.tp}:d})}
+function normT(t){return DEF.tarif.map(function(d){var s=(t||[]).filter(function(x){return x.id===d.id})[0];return s?{id:d.id,nama:d.nama,harga:d.man?0:(Number(s.harga)||0),tp:d.tp,man:d.man}:d})}
 function exSum(){return S.ex.filter(inP).reduce(function(a,e){return a+e.jml},0)}
 function addEx(e){S.ex.push(e);if(CLOUD)FS.collection('ex').doc(e.id).set(e).catch(fbErr);else saveLocal();render()}
 function delEx(id){S.ex=S.ex.filter(function(t){return t.id!==id});if(CLOUD)FS.collection('ex').doc(id).delete().catch(fbErr);else saveLocal();render()}
@@ -516,7 +518,7 @@ function viewLogin(){
   return '<h2>Masuk</h2><div class="card"><label>Email</label><input id="lg-e" type="email" autocomplete="username" inputmode="email"><label>Password</label><input id="lg-p" type="password" autocomplete="current-password"><button class="btn full" data-a="login">Masuk</button></div>';
 }
 function render(){
-  if(!Array.isArray(S.cfg.extra))S.cfg.extra=JSON.parse(JSON.stringify(DEF.extra));
+  if(!Array.isArray(S.cfg.extra))S.cfg.extra=JSON.parse(JSON.stringify(DEF.extra));S.cfg.extra=S.cfg.extra.filter(function(x){return x.id!=='angin'});
   if(CLOUD&&ui.auth!=='ready'){menu(false);$('#mbtn').style.display='none';$('#nav').innerHTML='';$('#bnav').innerHTML='';$('#who').innerHTML='';$('#app').innerHTML=viewLogin();$('#mode').textContent='';ui.dirty=false;return}
   $('#mbtn').style.display='';
   var tabs=TABS.filter(function(t){return ROLE==='owner'||t[0]==='cuci'||t[0]==='sabun'||t[0]==='qris'||t[0]==='ut'});
