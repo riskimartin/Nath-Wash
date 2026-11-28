@@ -590,7 +590,7 @@ function onClick(e){
   else if(a==='tab'){menu(false);ui.tab=v;ui.del=null;render();window.scrollTo(0,0)}
   else if(a==='per'){ui.per=v;render()}
   else if(a==='rmode'){ui.rmode=v;render()}
-  else if(a==='catadd'){var ct=(ui.cnew||'').trim();if(!ct){toast('Tulis catatannya dulu');return}var nw=new Date(),ck=nw.getFullYear()+'-'+p2(nw.getMonth()+1),hd='tanggal '+nw.getDate();S.cfg.cat=S.cfg.cat||{};var tx0=(S.cfg.cat[ck]||'').replace(/\s+$/,''),hs=tx0.split('\n').filter(function(l){return /^tanggal \d+$/i.test(l.trim())}),lh=hs.length?hs[hs.length-1].trim().toLowerCase():'';S.cfg.cat[ck]=(tx0?tx0+'\n':'')+(lh===hd?'':hd+'\n')+ct;ui.cnew='';ui.od['cat'+ck]=true;saveCfg();toast('Catatan ditambahkan')}
+  else if(a==='catadd'){var ci=document.querySelector('[data-f="cnew"]'),ct=(ci?ci.value:(ui.cnew||'')).trim();if(!ct){toast('Tulis catatannya dulu');return}var nw=new Date(),ck=nw.getFullYear()+'-'+p2(nw.getMonth()+1),hd='tanggal '+nw.getDate();S.cfg.cat=S.cfg.cat||{};var tx0=(S.cfg.cat[ck]||'').replace(/\s+$/,''),hs=tx0.split('\n').filter(function(l){return /^tanggal \d+$/i.test(l.trim())}),lh=hs.length?hs[hs.length-1].trim().toLowerCase():'';S.cfg.cat[ck]=(tx0?tx0+'\n':'')+(lh===hd?'':hd+'\n')+ct;ui.cnew='';ui.od['cat'+ck]=true;saveCfg();toast('Catatan ditambahkan')}
   else if(a==='catat'){ui.lain=false;
     var f=ui.form,t=S.cfg.tarif.filter(function(x){return x.id===f.jenis})[0],h0=Number(f.harga),dk=discAmt(h0,f),AD=adxList(),ad=adxSum(),h=h0-dk+ad;
     if(!t||!(h>0)){toast('Isi harga lebih dari 0');return}
